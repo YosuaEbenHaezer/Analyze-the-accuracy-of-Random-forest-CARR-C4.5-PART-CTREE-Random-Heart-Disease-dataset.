@@ -1,0 +1,825 @@
+---
+title: "usip_penambanganData_215314148"
+author: "Yosua"
+date: "2023-11-29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+```{r}
+#mengambil dataset dari repository
+trainData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset.csv")
+```
+```{r}
+#menampilkan datset 
+trainData
+```
+```{r}
+##Tahapan preprosesing yang dilakukan adalah membuat variabel Target menjadi bertipe factor karena merupakan atribut/variabel kategorikal sebagai kelas tujuan.
+trainData$Target <- factor(trainData$Target)
+str(trainData)
+```
+```{r}
+##membuat data Testing
+testData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset - testing .csv")
+```
+```{r}
+#menampilkan data Testing
+testData
+```
+```{r}
+##Tahapan preprosesing yang dilakukan adalah membuat variabel Target menjadi bertipe factor karena merupakan atribut/variabel kategorikal sebagai kelas tujuan.
+testData$Target <- factor(testData$Target)
+str(testData)
+```
+##CART (rpart) dan CTREE (party)
+```{r}
+library(party)
+formula <- Target~Age+Sex+CP+Trestbps+Chol+Fbs+Restecg+Thalach+Exang+Oldpeak+Slope+Ca+Thal
+fit <- ctree(formula,data=trainData,controls=ctree_control(minsplit=2))
+fit
+```
+```{r}
+plot(fit)
+```
+```{r}
+table(predict(fit), trainData$Target)
+```
+
+```{r}
+library(rpart)
+library(rpart.plot)
+```
+```{r}
+#default
+fit <- rpart(Target~.,data=trainData,method="class")
+fit
+```
+```{r}
+#tuning
+fit <- rpart(Target~.,data=trainData,method="class",control=rpart.control(minsplit=2))
+fit
+```
+```{r}
+formula <- Target~Age+Sex+CP+Trestbps+Chol+Fbs+Restecg+Thalach+Exang+Oldpeak+Slope+Ca+Thal
+#fit <- rpart(formula,data=trainData,method="class")
+fit <- rpart(formula,data=trainData,control=rpart.control(minsplit=2))
+fit
+```
+```{r}
+library(rpart.plot)
+rpart.plot(fit,extra=106)
+```
+```{r}
+## Menggambarkan plot dengan plot()
+plot(fit,margin=0.000000001)
+text(fit, use.n=TRUE,pretty=TRUE,cex=0.29)
+```
+```{r}
+library(rattle)
+```
+```{r}
+fancyRpartPlot(fit)
+```
+```{r}
+library(caret)
+```
+```{r}
+testData
+```
+```{r}
+prediksi <- predict(fit,newdata=trainData,type="class")
+prediksi
+```
+```{r}
+table_mat <- table(trainData$Target,prediksi)
+table_mat
+```
+```{r}
+akurasi <- sum(diag(table_mat))/sum(table_mat)
+print(paste("Hasil akurasinya adalah  : ", akurasi))
+```
+```{r}
+library(caret)
+    confusionMatrix(table(trainData$Target,prediksi))
+```
+```{r}
+print(fit$cptable)
+```
+```{r}
+  control <- ctree_control(minsplit=1,minbucket=round(4/3),maxdept=3)
+    tune_fit <- ctree(Target~.,data=trainData,controls=control)
+    tune_fit
+```
+```{r}
+ prediksi <- predict(tune_fit,newdata=testData)
+    prediksi
+```
+```{r}
+confusionMatrix(table(testData$Target,prediksi))
+```
+
+
+
+##C.45 (RWeka)
+```{r}
+trainData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset.csv")
+
+# Menampilkan dataset
+trainData
+```
+```{r}
+trainData$Target <- factor(trainData$Target)
+str(trainData)
+```
+```{r}
+##membuat data Testing
+testData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset - testing .csv")
+testData
+```
+```{r}
+Sys.setenv('JAVA_HOME'="C:/Program Files/Java/jdk-12.0.2/")
+library(RWeka)
+```
+```{r}
+library(rJava)
+```
+```{r}
+testData$Target <- factor(testData$Target)
+str(testData)
+```
+```{r}
+formula <- Target~Age+Sex+CP+Trestbps+Chol+Fbs+Restecg+Thalach+Exang+	Oldpeak+Slope+Ca+Thal
+fit <- J48(formula,data=trainData)
+fit
+```
+```{r}
+
+fit
+```
+```{r}
+summary(fit)
+```
+```{r}
+##menggambar plot
+plot(fit)
+```
+```{r}
+if(require("partykit", quietly = TRUE)) plot(fit)
+```
+```{r}
+table(predict(fit), trainData$Target)
+```
+```{r}
+prediksi <- predict(fit,newdata=testData,type="class")
+prediksi
+```
+```{r}
+table_mat <- table(testData$Target,prediksi)
+table_mat
+```
+```{r}
+library(caret)
+```
+```{r}
+confusionMatrix(table(testData$Target,prediksi))
+```
+```{r}
+"Tuning Parameter"
+control <- Weka_control(R=TRUE,M=2)
+    tune_fit <- J48(Target~.,data=trainData,control=Weka_control(R=FALSE,M=3))
+    tune_fit
+```
+```{r}
+plot(tune_fit)
+```
+```{r}
+ prediksifit <- predict(tune_fit,newdata=testData)
+    prediksifit
+```
+```{r}
+confusionMatrix(table(testData$Target,prediksifit))
+```
+##PART(RWeka)
+```{r}
+trainData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset.csv")
+```
+```{r}
+trainData$Target <- factor(trainData$Target)
+str(trainData)
+```
+```{r}
+##membuat data Testing
+testData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset - testing .csv")
+testData$Target <- factor(testData$Target)
+testData
+```
+```{r}
+Sys.setenv('JAVA_HOME'="C:/Program Files/Java/jdk-12.0.2/")
+library(RWeka)
+```
+```{r}
+library(rJava)
+```
+```{r}
+fit <- PART(formula,data=trainData)
+fit
+fit <- J48(formula,data=trainData,control=Weka_control(R=TRUE,M=5))
+## R-> reduced error prunning, M = minimum number of instances
+```
+```{r}
+summary(fit)
+```
+```{r}
+## menggambarkan plot
+plot(fit)
+```
+
+```{r}
+if(require("partykit", quietly = TRUE)) plot(fit)
+```
+```{r}
+table(predict(fit), trainData$Target)
+```
+```{r}
+##membuat data Testing
+testData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset - testing .csv")
+testData$Target <- factor(testData$Target)
+```
+```{r}
+prediksi <- predict(fit,newdata=testData,type="class")
+prediksi
+```
+```{r}
+table_mat <- table(testData$Target,prediksi)
+table_mat
+```
+```{r}
+library(caret)
+
+```
+```{r}
+confusionMatrix(table(testData$Target,prediksi))
+```
+
+
+###bagging cart (ipred)
+```{r}
+library(ipred)
+```
+```{r}
+trainData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset.csv")
+trainData$Target <- as.factor(trainData$Target)
+trainData
+```
+```{r}
+myFormula <- Target~Age+Sex+CP+Trestbps+Chol+Fbs+Restecg+Thalach+Exang+Oldpeak+Slope+Ca+Thal
+```
+```{r}
+fit <-bagging(myFormula,data=trainData,ntree=10)
+summary(fit)
+```
+```{r}
+##membuat data Testing
+testData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset - testing .csv")
+```
+```{r}
+
+```
+```{r}
+library(caret)
+```
+```{r}
+fit_prediksi <- predict(fit,newdata=testData)
+confusionMatrix(table(fit_prediksi,testData$Target))
+```
+#Boosted(C50)
+```{r}
+library(C50)
+```
+
+```{r}
+#training data
+trainData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset.csv")
+
+```
+```{r}
+# Menampilkan dataset
+trainData
+```
+```{r}
+trainData$Target <- as.factor(trainData$Target)
+```
+```{r}
+myFormula <- Target~Age+Sex+CP+Trestbps+Chol+Fbs+Restecg+Thalach+Exang+Oldpeak+Slope+Ca+Thal
+```
+```{r}
+fit <-C5.0(myFormula,data=trainData,trial=10)
+print(fit)
+summary(fit)
+```
+```{r}
+
+testData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset - testing .csv")
+```
+```{r}
+testData$Target <- factor(testData$Target)
+```
+```{r}
+library(caret)
+fit_prediksi <- predict(fit,newdata=testData)
+confusionMatrix(table(fit_prediksi,testData$Target))
+```
+##Naive Bayesian
+```{r}
+library(klaR)
+library(e1071)
+#training data
+trainData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset.csv")
+str(trainData)
+trainData
+```
+```{r}
+trainData$Target <- as.factor(trainData$Target)
+str(trainData)
+```
+```{r}
+fit <- naiveBayes(Target~., data=trainData)
+print(fit)
+summary(fit)
+```
+```{r}
+testData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset - testing .csv")
+testData$Target <- factor(testData$Target)
+str(testData)
+```
+```{r}
+# membuat prediksi
+prediksi <- predict(fit,newdata=testData)
+prediksi
+```
+```{r}
+#evaluasi model
+table(prediksi,testData$Target)
+```
+```{r}
+#confusion matrix
+confusionMatrix(table(prediksi,testData$Target))
+```
+###KNN (caret)
+```{r}
+library(caret)
+library(class)
+```
+```{r}
+trainData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset.csv")
+
+```
+
+```{r}
+trainData$Target <- factor(trainData$Target)
+str(trainData)
+```
+```{r}
+##membuat data Testing
+testData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset - testing .csv")
+```
+```{r}
+#megubah menjadi factor
+testData$Target <- factor(testData$Target)
+str(testData)
+```
+```{r}
+# Load class package
+library(class)
+```
+```{r}
+# baris pertama hingga baris ke 300 dan kolom ke 11 sampai ke 14
+knn.3 <- knn(train=trainData[1:300,11:14], test=testData[1:50,11:14],cl=trainData[1:300,14], k=3)
+knn.3
+```
+```{r}
+table(knn.3 ,testData[1:50,14])
+```
+```{r}
+confusionMatrix(table(knn.3, testData[1:50, 14]))
+
+```
+```{r}
+set.seed(200)
+ctrl <- trainControl(method="repeatedcv",repeats = 3)
+knnFit <- train(Target ~ ., data = trainData, method = "knn", trControl = ctrl, preProcess = c("center","scale"), tuneLength = 5)
+#Output of kNN fit
+knnFit
+```
+```{r}
+plot(knnFit)
+```
+```{r}
+knnPredict <- predict(knnFit,newdata = testData)
+knnPredict
+#Get the confusion matrix to see accuracy value and other parameter values
+confusionMatrix(knnPredict, testData$Target)
+```
+
+##SVM (e1071)
+```{r}
+#mengambil dataset dari repository
+trainData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset.csv")
+trainData
+```
+```{r}
+trainData$Target <- factor(trainData$Target)
+str(trainData)
+```
+```{r}
+svmfit <- svm(formula = Target ~ Age+Sex+CP+Trestbps+Chol+Fbs+Restecg+Thalach+Exang+Oldpeak+Slope+Ca+Thal,
+              data = trainData,
+              type = 'C-classification',
+              kernel = 'linear',
+              cost = 10,
+              scale = TRUE)
+
+```
+```{r}
+plot(svmfit, trainData, Age ~ Trestbps)
+
+
+```
+```{r}
+# Contoh: Menyertakan hanya dua variabel prediktor untuk divisualisasikan
+plot(trainData$Age, trainData$Trestbps, col = trainData$Target, pch = 19,
+     xlab = "Age", ylab = "Trestbps", main = "Scatter Plot of Age and Trestbps by Target")
+legend("topright", legend = levels(trainData$Target), col = 1:length(levels(trainData$Target)), pch = 19, title = "Target")
+
+# Menambahkan variabel prediktor lainnya jika perlu
+# plot(trainData$Age, trainData$Chol, col = trainData$Target, pch = 19, add = TRUE)
+
+```
+```{r}
+##membuat data Testing
+testData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset - testing .csv")
+testData$Target <- factor(testData$Target)
+```
+```{r}
+library(caret)
+```
+```{r}
+test_pred <- predict(svmfit,newdata=testData)
+test_pred
+```
+```{r}
+confusionMatrix(table(test_pred,testData$Target))
+
+```
+```{r}
+plot(svmfit,data=testData,Age~Trestbps)
+```
+##ANN
+```{r}
+#mengambil dataset dari repository
+trainData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset.csv")
+```
+```{r}
+testData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset - testing .csv")
+```
+```{r}
+trainData$Age <- as.numeric(trainData$Age)
+trainData$Sex <- as.numeric(trainData$Sex)
+trainData$CP <- as.numeric(trainData$CP)
+trainData$Trestbps <- as.numeric(trainData$Trestbps)
+trainData$Chol <- as.numeric(trainData$Chol)
+trainData$Fbs <- as.numeric(trainData$Fbs)
+trainData$Restecg <- as.numeric(trainData$Restecg)
+trainData$Thalach <- as.numeric(trainData$Thalach)
+trainData$Exang <- as.numeric(trainData$Exang)
+trainData$Oldpeak <- as.numeric(trainData$Oldpeak)
+trainData$Slope <- as.numeric(trainData$Slope)
+trainData$Ca <- as.numeric(trainData$Ca)
+trainData$Thal <- as.numeric(trainData$Thal)
+trainData$Target <- factor(trainData$Target)
+
+testData$Age <- as.numeric(testData$Age)
+testData$Sex <- as.numeric(testData$Sex)
+testData$CP <- as.numeric(testData$CP)
+testData$Trestbps <- as.numeric(testData$Trestbps)
+testData$Chol <- as.numeric(testData$Chol)
+testData$Fbs <- as.numeric(testData$Fbs)
+testData$Restecg <- as.numeric(testData$Restecg)
+testData$Thalach <- as.numeric(testData$Thalach)
+testData$Exang <- as.numeric(testData$Exang)
+testData$Oldpeak <- as.numeric(testData$Oldpeak)
+testData$Slope <- as.numeric(testData$Slope)
+testData$Ca <- as.numeric(testData$Ca)
+testData$Thal <- as.numeric(testData$Thal)
+testData$Target <- factor(testData$Target)
+str(trainData)
+str(testData)
+# Convert all columns to numeric in trainData
+trainData$Age <- as.numeric(trainData$Age)
+trainData$Sex <- as.numeric(trainData$Sex)
+trainData$CP <- as.numeric(trainData$CP)
+trainData$Trestbps <- as.numeric(trainData$Trestbps)
+trainData$Chol <- as.numeric(trainData$Chol)
+trainData$Fbs <- as.numeric(trainData$Fbs)
+trainData$Restecg <- as.numeric(trainData$Restecg)
+trainData$Thalach <- as.numeric(trainData$Thalach)
+trainData$Exang <- as.numeric(trainData$Exang)
+trainData$Oldpeak <- as.numeric(trainData$Oldpeak)
+trainData$Slope <- as.numeric(trainData$Slope)
+trainData$Ca <- as.numeric(trainData$Ca)
+trainData$Thal <- as.numeric(trainData$Thal)
+trainData$Target <- as.numeric(trainData$Target)
+
+
+```
+
+```{r}
+library(neuralnet)
+```
+```{r}
+fit <- neuralnet(Target ~ Age + Sex + CP + Trestbps + Chol + Fbs + Restecg + Thalach + Exang + Oldpeak + Slope + Ca + Thal,
+                 data = trainData, 
+                 hidden = c(6), 
+                 rep = 5, 
+                 linear.output = FALSE, 
+                 lifesign = "minimal", 
+                 stepmax = 1000000,
+                 threshold = 0.001)
+
+```
+```{r}
+fit
+summary(fit)
+```
+```{r}
+plot(fit,rep="best")
+
+```
+```{r}
+library(caret)
+```
+```{r}
+# Convert all columns to numeric in test_data
+testData[] <- lapply(testData, as.numeric)
+```
+
+```{r}
+dataset.prediction <- predict(fit, newdata = testData)
+```
+```{r}
+# Assuming 'fit' is your trained neural network model
+dataset.prediction <- predict(fit, newdata = testData)
+
+# Get the index of the predicted class for each observation
+idx <- apply(dataset.prediction, 1, which.max)
+
+# Map the index to the corresponding 'Target' values
+predicted <- testData$Target[idx]
+predicted
+```
+```{r}
+table(predicted, testData$Target)
+```
+```{r}
+#length(predicted)
+#length(testData$Target)
+#class(predicted)
+#class(testData$Target)
+#predicted <- as.factor(predicted)
+#testData$Target <- as.factor(testData$Target)
+#class(predicted)
+#class(testData$Target)
+# Mengubah vektor menjadi faktor dengan levels yang sama
+#predicted <- factor(predicted, levels = #levels(testData$Target))
+#confusionMatrix(table(predicted, testData$Target))
+dataset.prediction <- predict(fit, newdata = testData, type = "class")
+
+# Assuming 'Target' is the actual outcome in your test_data
+actual <- as.factor(testData$Target)
+
+# Convert 'predicted' to a factor
+predicted <- as.factor(dataset.prediction)
+
+# Create a confusion matrix
+conf_matrix <- table(Actual = actual, Predicted = predicted)
+print(conf_matrix)
+
+# Calculate accuracy
+accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix)
+print(paste("Accuracy:", accuracy))
+
+```
+##Random Forest
+```{r}
+library(randomForest)
+library(caret)
+library(e1071)
+```
+```{r}
+trainData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset.csv")
+trainData$Target <- factor(trainData$Target)
+
+```
+```{r}
+#Evaluate the model with a grid search of 10 folder
+trControl <- trainControl(method="cv", number=5,search="grid")
+```
+```{r}
+set.seed(1234)
+
+# Run the model
+rf_default <- train(Target~.,
+    data = trainData,
+    method = "rf",
+    metric = "Accuracy",
+    trControl = trControl)
+```
+```{r}
+# Print the results
+print(rf_default)
+```
+```{r}
+rf_default2 <- randomForest(trainData)
+print(rf_default2)
+```
+```{r}
+summary(rf_default2)
+```
+```{r}
+rf_default2
+```
+```{r}
+#importance(rf_default2)
+```
+```{r}
+varImpPlot(rf_default2)
+```
+```{r}
+set.seed(1234)
+tuneGrid <- expand.grid(.mtry = c(1:10))
+rf_mtry <- train(Target~.,
+    data = trainData,
+    method = "rf",
+    metric = "Accuracy",
+    tuneGrid = tuneGrid,
+    trControl = trControl,
+    importance = TRUE,
+    nodesize = 14,
+    ntree = 300)
+```
+```{r}
+print(rf_mtry)
+```
+```{r}
+## menyimpan nilai mtry terbaik
+best_mtry <- rf_mtry$bestTune$mtry
+best_mtry
+```
+```{r}
+##Menyimpan dan menggunakan 
+max(rf_mtry$results$Accuracy)
+```
+```{r}
+store_maxnode <- list()
+tuneGrid <- expand.grid(.mtry = best_mtry)
+for (maxnodes in c(2: 5)) {
+    set.seed(1234)
+    rf_maxnode <- train(Target~.,
+        data = trainData,
+        method = "rf",
+        metric = "Accuracy",
+        tuneGrid = tuneGrid,
+        trControl = trControl,
+        importance = TRUE,
+        nodesize = 14,
+        maxnodes = maxnodes,
+        ntree = 300)
+    current_iteration <- toString(maxnodes)
+    store_maxnode[[current_iteration]] <- rf_maxnode
+}
+```
+```{r}
+results_mtry <- resamples(store_maxnode)
+summary(results_mtry)
+```
+```{r}
+store_maxnode <- list()
+tuneGrid <- expand.grid(.mtry = best_mtry)
+for (maxnodes in c(5: 10)) {
+    set.seed(1234)
+    rf_maxnode <- train(Target~.,
+        data = trainData,
+        method = "rf",
+        metric = "Accuracy",
+        tuneGrid = tuneGrid,
+        trControl = trControl,
+        importance = TRUE,
+        nodesize = 14,
+        maxnodes = maxnodes,
+        ntree = 300)
+    key <- toString(maxnodes)
+    store_maxnode[[key]] <- rf_maxnode
+}
+```
+```{r}
+results_mtry <- resamples(store_maxnode)
+summary(results_mtry)
+```
+```{r}
+store_maxtrees <- list()
+for (ntree in c(250, 300, 350, 400, 450, 500, 550, 600, 800, 1000, 2000)) {
+    set.seed(5678)
+    rf_maxtrees <- train(Target~.,
+        data = trainData,
+        method = "rf",
+        metric = "Accuracy",
+        tuneGrid = tuneGrid,
+        trControl = trControl,
+        importance = TRUE,
+        nodesize = 14,
+        maxnodes = 4,
+        ntree = ntree)
+    key <- toString(ntree)
+    store_maxtrees[[key]] <- rf_maxtrees
+}
+```
+```{r}
+results_tree <- resamples(store_maxtrees)
+summary(results_tree)
+```
+```{r}
+fit_rf <- train(Target~.,
+    trainData,
+    method = "rf",
+    metric = "Accuracy",
+    tuneGrid = tuneGrid,
+    trControl = trControl,
+    importance = TRUE,
+    nodesize = 14,
+    ntree = 300,
+    maxnodes = 14)
+```
+```{r}
+print(fit_rf)
+```
+```{r}
+plot(rf_default)
+```
+```{r}
+varImp(rf_default)
+```
+```{r}
+library(caret)
+##membuat data Testing
+testData <- read.csv("D:\\Kuliah\\SMSTR 5\\PenambanganData\\usip\\heart_disease_dataset - testing .csv")
+```
+```{r}
+prediksi <- predict(rf_default,testData)
+prediksi
+```
+```{r}
+confusionMatrix(table(testData$Target,prediksi))
+```
+```{r}
+varImpPlot(rf_default2)
+```
+```{r}
+
+```
+
+NO	 Algoritma	    Package	        Fungsi	        Akurasi
+1	    CART	        rpart	          rpart	            0.7888
+2	    C4.5	        RWeka	          J48	              0.72
+3	    PART	        RWeka	          PART	            0.6   
+4	    CTREE	        party	          ctree	  0.788778877887789
+5	    Random Forest	randomForest	  random Forest	    1
+6	    Bagging CART	ipred	          bagging	          1
+7	    BoostedC5.0	  C50	            C5.0	            1
+8	    NaiveBayesian	klar	          naiveBayes  	    0.62 
+9	    KNN	          caret	          knn	              1
+10	  SVM 	        e1071	          SVM 	            0.64
+11	  ANN	          neuralnet	      neuralnet 	      0.38
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
