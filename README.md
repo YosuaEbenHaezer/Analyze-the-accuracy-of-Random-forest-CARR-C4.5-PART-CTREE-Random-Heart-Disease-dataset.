@@ -16,7 +16,6 @@ Pastikan kedua file berada dalam direktori kerja (working directory) R kamu.
 
 Berikut daftar lengkap library R yang digunakan dalam analisis ini:
 
-```r
 # CART dan CTREE
 library(rpart)
 library(rpart.plot)
