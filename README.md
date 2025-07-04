@@ -1,5 +1,4 @@
 
-Salin kode
 # 💓 Prediksi Penyakit Jantung Menggunakan Berbagai Metode Klasifikasi di R
 
 Proyek ini bertujuan untuk memprediksi kemungkinan penyakit jantung berdasarkan dataset yang diberikan menggunakan beberapa metode klasifikasi populer di R. Algoritma yang digunakan meliputi **CART (rpart)**, **CTREE (party)**, **Bagging (ipred)**, **Boosting (C5.0)**, **Naive Bayes**, **KNN**, dan **Random Forest**.
