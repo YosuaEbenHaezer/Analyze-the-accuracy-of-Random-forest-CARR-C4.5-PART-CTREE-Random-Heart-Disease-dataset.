@@ -89,6 +89,8 @@ Perhatikan distribusi target dan balancing data jika perlu.
 Data testing (heart_disease_dataset-testing.csv) hanya digunakan untuk evaluasi akhir, bukan pelatihan model.
 
 
+Hasil Percobaan: 
+
 | No | Algoritma      | Package      | Fungsi        | Akurasi |
 | -- | -------------- | ------------ | ------------- | ------- |
 | 1  | CART           | rpart        | rpart         | 0.7888  |
