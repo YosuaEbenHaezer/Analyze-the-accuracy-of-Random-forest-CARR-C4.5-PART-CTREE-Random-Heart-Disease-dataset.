@@ -73,13 +73,13 @@ Gunakan tombol Knit di RStudio untuk menghasilkan laporan HTML/PDF.
 Atau jalankan per blok kode (chunk) secara manual.
 
 📊 Output yang Dihasilkan
-Visualisasi model decision tree (CART dan CTREE)
-
-Confusion matrix untuk masing-masing model
-
-Akurasi prediksi data uji
-
-Perbandingan performa antar model klasifikasi
+      Visualisasi model decision tree (CART dan CTREE)
+      
+      Confusion matrix untuk masing-masing model
+      
+      Akurasi prediksi data uji
+      
+      Perbandingan performa antar model klasifikasi
 
 📝 Catatan
 Gunakan set.seed() untuk hasil yang reprodusibel.
@@ -87,3 +87,23 @@ Gunakan set.seed() untuk hasil yang reprodusibel.
 Perhatikan distribusi target dan balancing data jika perlu.
 
 Data testing (heart_disease_dataset-testing.csv) hanya digunakan untuk evaluasi akhir, bukan pelatihan model.
+
+
+| No | Algoritma      | Package      | Fungsi        | Akurasi |
+| -- | -------------- | ------------ | ------------- | ------- |
+| 1  | CART           | rpart        | rpart         | 0.7888  |
+| 2  | C4.5           | RWeka        | J48           | 0.72    |
+| 3  | PART           | RWeka        | PART          | 0.6     |
+| 4  | CTREE          | party        | ctree         | 0.7888  |
+| 5  | Random Forest  | randomForest | random Forest | 1.0     |
+| 6  | Bagging CART   | ipred        | bagging       | 1.0     |
+| 7  | Boosted C5.0   | C50          | C5.0          | 1.0     |
+| 8  | Naive Bayesian | klar         | naiveBayes    | 0.62    |
+| 9  | KNN            | caret        | knn           | 1.0     |
+| 10 | SVM            | e1071        | SVM           | 0.64    |
+| 11 | ANN            | neuralnet    | neuralnet     | 0.38    |
+
+
+Beberapa model seperti Random Forest, Bagging, dan KNN menunjukkan akurasi sempurna, namun kemungkinan besar terjadi overfitting akibat ukuran dataset yang kecil dan validasi model yang kurang optimal. Diperlukan evaluasi model yang lebih ketat seperti cross-validation dan perbaikan preprocessing, terutama untuk model ANN agar hasil prediksi lebih akurat dan realistis.
+
+
